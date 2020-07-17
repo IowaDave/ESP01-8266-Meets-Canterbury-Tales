@@ -186,6 +186,6 @@ may wish to consider conserving precious RAM by using PROGMEM to store the strin
 
 **Going Beyond Const: Try Formatted PROGMEM Strings**
 
-A string stored in flash can in all the uswual ways after it has been moved into a buffer in RAM. For example, the string can contain formatting codes for use with the Serial.printf() statement. An example of this delightful concept is available in this repository. See the file named, *PROGMEM_example_with_formatted_strings.ino*.
+A string stored in flash can served your purposes in all the usual ways after it has been moved into a RAM buffer. For example, the string can contain formatting codes for use with the Serial.printf() statement. An example of this delightful concept is available in this repository. See the file named, *PROGMEM_example_with_formatted_strings.ino*.
 
 Happy coding!
