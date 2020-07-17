@@ -52,7 +52,7 @@ static const char variableName[] PROGMEM = "This string is enclosed only in quot
 Comment: both of these "official" examples appear to compile successfully. I found also that omitting both the curly brackets and the "static" token produces compact code that compiles successfully:
 
 <pre><code style="font-family: monospace; ">
-/* Expressif reference example */
+/* IowaDave example */
 const char variableName[] PROGMEM = "This string is enclosed only in quotes.";
 </code></pre>
 
