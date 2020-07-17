@@ -8,15 +8,15 @@ The data structure for this project consists of 903 distinctly named strings, on
 ### PROGMEM for 8266 and Arduino IDE
 Strings take up room in memory. By default, the Arduino IDE's compiler may place the bytes representing a string's characters into RAM, for declarations like the following:
 
-<code style="font-family: monospace; ">
+<pre><code style="font-family: monospace; ">
 const char ramHog[] = "This string will consume fifty-nine bytes of precious RAM!";
-</code>
+</code></pre>
 
 It will do the same thing with strings defined inline with various code statements, such as this:
 
-<code style="font-family: monospace; ">
+<pre><code style="font-family: monospace; ">
   Serial.println("Here is another string that could pitch its tent in your RAM!");
-</code>
+</code></pre>
 
 For strings like those, which your code will never change, RAM might not be the best storage location. 
 
@@ -65,7 +65,7 @@ const char string_1[] PROGMEM = "Also store me in flash.";
 const char string_2[] PROGMEM = "Hey! Store me in flash, too!";
 
 // Then set up a table to refer to the strings.
-const char \*const string_table[] PROGMEM = {string_0, string_1, string_2};
+const char *const string_table[] PROGMEM = {string_0, string_1, string_2};
 </code></pre>
 
 The formulation of the declaration in the Arduino.cc example looks strange to me. Why does the token, "const", appear twice? It seems at best unnecessary. By trial and error, I found that a shorter, alternate form also compiles and functions correctly, as shown below. 
@@ -108,7 +108,7 @@ Actually, both the dereferencing and the copying are handled in a single code st
 
 <pre><code style="font-family: monospace; ">
 // de-reference and type-cast the pointer, then move its target into the buffer
-strcpy_P(stringBuf, (char\*)pgm_read_dword(&(string_table[i])));
+strcpy_P(stringBuf, (char*)pgm_read_dword(&(string_table[i])));
 </code></pre>
 
 
@@ -164,6 +164,15 @@ The difference, in program storage space usage, is 43,388 bytes. That quantity r
 
 The difference, in RAM usage, is only 184 bytes. 
 
+### View the output
+The sketch waits 10 seconds after starting the Serial port. Then it sends the strings out via Serial. An easy place to view the output is in the Serial Monitor window of the Arduino IDE. Different 8266-based modules behave differently when switching modes, that is, when changing between uploading new firmware and executing the firmware.
+
+* A NodeMCU-style development board with an ESP-12E or -12F might run the serial output automatically about ten seconds after the code uploads. 
+* Other 8266-based modules may need to be re-set from "program" mode to "run" mode before they will run the sketch.
+  * The ESP-01 module would be in a programming adapter of some type. Pull the adapter out of the computer's USB port, place the adapter in "UART" mode, then reinstall the adapter onto the computer. Open the Serial Monitor and wait a few seconds.
+  * A Wemos-style module for the ESP-12F also might need a power cycle before it will start in "run" mode. Disconnect it from the USB cable then plug it back in. Open the Serial Monitor and wait a few seconds.
+  
+
 ### Why use PROGMEM?
 It is a reasonable question, even when a lengthy poem, as in this example, could still fit within RAM. For small numbers of short strings in simple sketches, the modest extra effort and complexity to use PROGMEM might not be worthwhile.
 
@@ -175,3 +184,8 @@ However, code writers designing sketches to have:
 
 may wish to consider conserving precious RAM by using PROGMEM to store the strings that the sketch will only use but will never change.
 
+**Going Beyond Const: Try Formatted PROGMEM Strings**
+
+A string stored in flash can in all the uswual ways after it has been moved into a buffer in RAM. For example, the string can contain formatting codes for use with the Serial.printf() statement. An example of this delightful concept is available in this repository. See the file named, *PROGMEM_example_with_formatted_strings.ino*.
+
+Happy coding!
