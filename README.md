@@ -20,7 +20,7 @@ It will do the same thing with strings defined inline with various code statemen
 
 For strings like those, which your code will never change, RAM might not be the best storage location. 
 
-The 8266 hardware provides 80 KiB (81,920 bytes) of dynamic RAM for program variables. RAM is best used for values that need to change. The PROGMEM modifier instructs the compiler to store strings that never change in the program code's memory, rather than in the RAM.
+The 8266 hardware provides 80 KiB (81,920 bytes) of dynamic RAM for program variables. RAM is best used for values that need to change. Flash memory for program storage is much larger. Rercent versions of ESP-01 modules provide almost one megabyte of flash memory. The PROGMEM modifier instructs the compiler to store strings that never change in the larger flash memory, rather than in the RAM.
 
 ### PROGMEM Documentation Online -- not *quite* perfect!
 Links listed below connect to web sites and PDFs that explain PROGMEM in detail. They give examples that really reward close inspection. One detail needs modification for use with 8266, as explained below in *Dereferencing PROGMEM pointers for 8266*.
@@ -29,7 +29,7 @@ Links listed below connect to web sites and PDFs that explain PROGMEM in detail.
 
 [Arduino.cc PROGMEM reference](https://www.arduino.cc/reference/en/language/variables/utilities/progmem/) :: This also impresses me as authoritative -- when writing code for Arduinos! 
 
-There are some differences between the examples in the Arduino.cc reference compared to corresponding examples in the Expressif document. The differences might not affect the result. The discussion that follows will illustrate examples from both of the references.
+In addition to the detail mentioned above, there are some differences of syntax between the examples in the Arduino.cc reference compared to corresponding examples in the Expressif document. These differences might not affect the result. The discussion that follows illustrates examples of the syntax from both of the references. 
 
 ### Construct an array of strings for PROGMEM with 8266
 
@@ -49,7 +49,12 @@ The Expressif documentation for 8266 further qualifies the string variable as *s
 static const char variableName[] PROGMEM = "This string is enclosed only in quotes.";
 </code></pre>
 
-Comment: both of these examples appear to compile successfully. I prefer the shorter syntax given in the Arduino.cc reference because it seems clear and sufficient.
+Comment: both of these "official" examples appear to compile successfully. I found also that omitting both the curly brackets and the "static" token produces compact code that compiles successfully:
+
+<pre><code style="font-family: monospace; ">
+/* Expressif reference example */
+const char variableName[] PROGMEM = "This string is enclosed only in quotes.";
+</code></pre>
 
 **Declare the array**
 
@@ -79,23 +84,23 @@ const char string_0[] PROGMEM = "Store me in flash";
 const char string_1[] PROGMEM = "Also store me in flash";
 const char string_2[] PROGMEM = "Hey! Store me in flash, too!";
 
-// I found that the second "const" token in the table's declaration could be omitted, like this:
+// The second "const" token in the table's declaration was omitted, like this:
 const char * string_table[] PROGMEM = {string_0, string_1, string_2};
 </code></pre>
 
 I prefer the alternate form because it seems clear and complete. The sketch in this repository follows the alternate syntax. Readers may certainly adhere closely to the Arduino.cc reference if they prefer. It would be the first trouble-shooting step to try in the event my alternate format fails to compile.
 
 ## Retrieve strings from flash memory for further processing
-Attempts to access directly the strings stored in flash memory can crash the 8266 program. The references explain why. I won't repeat it here. Special methods must be used to access strings stored in flash.
+Attempts to access directly the strings stored in flash memory can crash the 8266 program. The references explain why. I won't repeat the reasons here. Special methods must be used to access strings stored in flash.
 
-The method I used copies the strings -- one at a time -- into a small buffer located in RAM. I know, because I counted, that the longest line in the poem has fewer than 60 characters. I declared a c-type string having 60-character capacity to act as the buffer, as follows:
+The method I used copies the strings -- one at a time -- into a small buffer located in RAM. The longest line in the poem has fewer than 60 characters. Therefore, a single, c-type string having 60-character capacity can serve as the buffer, as follows:
 
 <pre><code style="font-family: monospace; ">
 // Define a string buffer in RAM
 char stringBuf[60];
 </code></pre>
 
-The sketch declares 903 strings, one for each line in the poem. It declares an array of 903 pointers to the strings. All of that is stored in flash.
+This is magic. The sketch declares 903 strings, one for each line in the poem. It declares an array of 903 pointers to the strings. All of that text -- almost 40,000 bytes -- is stored in flash memory. Then it takes only 60 bytes of RAM to process the text.
 
 **Pseudo-code for this part**
 
@@ -104,13 +109,12 @@ Print the strings by looping through the array of pointers.
 * copy the string it points to, into the buffer
 * print the buffer
 
-Actually, both the dereferencing and the copying are handled in a single code statement. 
+In real code, both the dereferencing and the copying are handled within a single statement. 
 
 <pre><code style="font-family: monospace; ">
 // de-reference and type-cast the pointer, then move its target into the buffer
 strcpy_P(stringBuf, (char*)pgm_read_dword(&(string_table[i])));
 </code></pre>
-
 
 **Dereferencing PROGMEM pointers for 8266**
 
@@ -140,9 +144,9 @@ After the text was ready, I piped it through a short C program (makePROGMEM.c in
 This is a nice example of writing code that writes code. It would have been foolish of me to sit there and type 903 string declarations by hand. Too many mistakes! This way, all I had to do was to copy the program's output and paste it into the Arduino sketch.
 
 ### Compile and upload the sketch onto the 8266.
-The sketch in this repository is nothing more than the example given in the Arduino.cc reference, modified to use Chaucer's 903-line poem for the strings and the "dword" size for the pointers.
+The sketch in this repository follows the example given in the Arduino.cc reference, modified to use Chaucer's 903-line poem for the strings and the "dword" size for the pointers.
 
-It might interest the reader to compare the memory-usage statistics provided by the Arduino IDE compiler for this "Chaucer" sketch to those for an empty sketch such as the following:
+It might amuse the reader to compare the memory-usage statistics provided by the Arduino IDE compiler for this "Chaucer" sketch to those for an empty sketch such as the following:
 
 <pre><code style="font-family: monospace; ">
 void setup() {
