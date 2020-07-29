@@ -3,6 +3,10 @@ Load a very long, 700-year-old poem onto an ESP-01 8266-based module. Minimize t
 
 By David "IowaDave" Sparks
 
+*I need to make corrective edits in the discussion of the "const" keyword, below. My approach to declaring string constants turns out to be inconsistent with the strict C language specification. It does not matter that I got my code to compile as written. That happy result is due to the Arduino IDE treating an old man with kind forgiveness. This article will become better after I go back in and conform my code to the specification.* 
+
+_What needs to change? I suspect the Arduino example where 'const' appears two times in a declaration statement is probably correct. I need to research and test this a little more. Then I need to bring everything into line. At July 28, 2020, it remains an unfinished task._
+
 The data structure for this project consists of 903 distinctly named strings, one for each line of the poem, plus an array of 903 pointers to the strings. It occupies more than 43,000 bytes of flash memory. Yet, it requires fewer than 200 bytes of RAM to access and print out all of that text.
 
 ### PROGMEM for 8266 and Arduino IDE
