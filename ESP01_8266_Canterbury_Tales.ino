@@ -905,7 +905,7 @@ const char ct0901[] PROGMEM = "And he bigan with right a myrie cheere";
 const char ct0902[] PROGMEM = "His tale anon, and seyde in this manire";
 
 // define an array (a table) of pointers to the strings
-const char * string_table[] PROGMEM = { ct0000, 
+const char * const string_table[] PROGMEM = { ct0000, 
 ct0001, ct0002, ct0003, ct0004, ct0005, ct0006, ct0007, ct0008, ct0009, 
 ct0010, ct0011, ct0012, ct0013, ct0014, ct0015, ct0016, ct0017, ct0018, 
 ct0019, ct0020, ct0021, ct0022, ct0023, ct0024, ct0025, ct0026, ct0027, 
@@ -1006,7 +1006,7 @@ ct0865, ct0866, ct0867, ct0868, ct0869, ct0870, ct0871, ct0872, ct0873,
 ct0874, ct0875, ct0876, ct0877, ct0878, ct0879, ct0880, ct0881, ct0882, 
 ct0883, ct0884, ct0885, ct0886, ct0887, ct0888, ct0889, ct0890, ct0891, 
 ct0892, ct0893, ct0894, ct0895, ct0896, ct0897, ct0898, ct0899, ct0900, 
-ct0901, ct0902, }
+ct0901, ct0902 };
 
 // define a buffer in RAM for processing the strings
 char stringBuf[60];
