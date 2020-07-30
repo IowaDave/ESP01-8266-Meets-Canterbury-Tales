@@ -76,8 +76,6 @@ const char string_1[] PROGMEM = "Also store me in flash.";
 const char string_2[] PROGMEM = "Hey! Store me in flash, too!";
 
 // Then set up a table to refer to the strings.
-
-<pre><code style="font-family: monospace; ">
 const char * const string_table[] PROGMEM = {string_0, string_1, string_2};
 </code></pre>
 
