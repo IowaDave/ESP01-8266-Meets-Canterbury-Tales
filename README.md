@@ -3,10 +3,6 @@ Load a very long, 700-year-old poem onto an ESP-01 8266-based module. Minimize t
 
 By David "IowaDave" Sparks
 
-*I need to make corrective edits in the discussion of the "const" keyword, below. My approach to declaring string constants turns out to be inconsistent with the strict C language specification. It does not matter that I got my code to compile as written. That happy result is due to the Arduino IDE treating an old man with kind forgiveness. This article will become better after I go back in and conform my code to the specification.* 
-
-_What needs to change? I suspect the Arduino example where 'const' appears two times in a declaration statement is probably correct. I need to research and test this a little more. Then I need to bring everything into line. At July 28, 2020, it remains an unfinished task._
-
 The data structure for this project consists of 903 distinctly named strings, one for each line of the poem, plus an array of 903 pointers to the strings. It occupies more than 43,000 bytes of flash memory. Yet, it requires fewer than 200 bytes of RAM to access and print out all of that text.
 
 ### PROGMEM for 8266 and Arduino IDE
@@ -46,14 +42,20 @@ The example given in the Arduino.cc reference is shown below. Notice how the tex
 const char variableName[] PROGMEM = {"This string is enclosed within both quotes and curly brackets."};
 </code></pre>
 
-The Expressif documentation for 8266 further qualifies the string variable as *static*, but does not use the curly brackets:
+The Expressif documentation for 8266 further declares the string variable as `static`, but does not use the curly brackets:
 
 <pre><code style="font-family: monospace; ">
 /* Expressif reference example */
 static const char variableName[] PROGMEM = "This string is enclosed only in quotes.";
 </code></pre>
 
-Comment: both of these "official" examples appear to compile successfully. I found also that omitting both the curly brackets and the "static" token produces compact code that compiles successfully:
+Comments after reviewing the references and some C documentation: 
+
+* Both of these "official" examples appear to compile successfully.
+* The curly brackets are probably not necessary when initializing arrays of characters, i.e., C strings.
+* The `static` keyword might be needed inside a code block, but might not be needed for global strings.
+
+I found that omitting both the curly brackets and the "static" keyword for global declarations of C strings produces compact code that compiles successfully:
 
 <pre><code style="font-family: monospace; ">
 /* IowaDave example */
@@ -74,25 +76,29 @@ const char string_1[] PROGMEM = "Also store me in flash.";
 const char string_2[] PROGMEM = "Hey! Store me in flash, too!";
 
 // Then set up a table to refer to the strings.
-const char *const string_table[] PROGMEM = {string_0, string_1, string_2};
-</code></pre>
-
-The formulation of the declaration in the Arduino.cc example looks strange to me. Why does the token, "const", appear twice? It seems at best unnecessary. By trial and error, I found that a shorter, alternate form also compiles and functions correctly, as shown below. 
 
 <pre><code style="font-family: monospace; ">
-/*
- * 8266 working example
- */
-// Define the strings
-const char string_0[] PROGMEM = "Store me in flash";
-const char string_1[] PROGMEM = "Also store me in flash";
-const char string_2[] PROGMEM = "Hey! Store me in flash, too!";
-
-// The second "const" token in the table's declaration was omitted, like this:
-const char * string_table[] PROGMEM = {string_0, string_1, string_2};
+const char * const string_table[] PROGMEM = {string_0, string_1, string_2};
 </code></pre>
 
-I prefer the alternate form because it seems clear and complete. The sketch in this repository follows the alternate syntax. Readers may certainly adhere closely to the Arduino.cc reference if they prefer. It would be the first trouble-shooting step to try in the event my alternate format fails to compile.
+The foregoing Arduino example wound up being the format I followed in this project.
+
+The placement of a second `const` qualifier in the declaration of the `string_table` array, above, looks unnecessary to me because array objects cannot be modified as a whole. In other words, the array object behaves like a constant for purposes of the program logic.
+
+Meanwhile, the first `const` qualifier makes it clear that the string pointers in the array are constants, meaning their values cannot be reassigned to indicate a different memory location. How much more locked-down does this data structure need to be?
+
+The second `const` qualifier applies to the `string_table` object. In effect it says, "This object not merely *behaves* like a constant, it *actually is* a constant." Why would it be important to say that?
+
+Being naturally curious, I explored this puzzle. I found that the second `const` qualifier could be omitted for the 8266 boards that I tested.  For example, the following code, 
+
+    const char * const string_table[] PROGMEM = {string_0, string_1, string_2};
+
+compiled and ran successfully for the 8266-based boards that I tested. 
+
+Even so, I came to accept that the Arduino example, with the two `const` qualifiers, is the better syntax. Two reasons:
+
+1. The Arduino example is not wrong. It does compile and run for 8266.
+2. Consistency with the reference. The second `const` qualifier might actually be necessary in some situations. For example, compiling for certain Arduino boards appears to require that the array object be qualified as `const` in order for compiler to store the array in read-only memory.
 
 ## Retrieve strings from flash memory for further processing
 Attempts to access directly the strings stored in flash memory can crash the 8266 program. The references explain why. I won't repeat the reasons here. Special methods must be used to access strings stored in flash.
